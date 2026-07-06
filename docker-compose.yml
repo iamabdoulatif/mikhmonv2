@@ -1,6 +1,8 @@
 version: "3"
 services:
   php_7_4:
+    # Dev local : image: php:7.4-fpm
+    # Docker Hub: image: iamlatif/mikhmonv2:latest
     image: php:7.4-fpm
     container_name: php_7_4
     tty: true

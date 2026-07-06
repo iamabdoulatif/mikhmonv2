@@ -1,0 +1,35 @@
+# Docker ignore for Mikhmonv2
+# Prevents unnecessary files from being included in the Docker image
+
+# Git
+.git
+.gitignore
+
+# Documentation (not needed in image)
+README.md
+DOCUMENTATION_MIGRATION_V7.md
+LICENSE
+_config.yml
+
+# Local data & logs
+data/
+*.log
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary / debug files
+*.py
+diag.py
+fix_*.py
+debug_*.py
+
+# Build scripts (only needed locally)
+build-push.sh
+
+# Node modules (if any)
+node_modules/
