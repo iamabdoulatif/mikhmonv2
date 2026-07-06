@@ -1,0 +1,57 @@
+# =============================================================================
+# Mikhmonv2 - Light Docker image for MikroTik hAP ax² (ARM64)
+# Target size: ~30 MB compressed
+# Architecture: linux/arm64
+# Base: Alpine Linux 3.18
+# Server: PHP 8.1 built-in web server + extra extensions
+# =============================================================================
+
+FROM alpine:3.18
+
+LABEL maintainer="iamlatif"
+LABEL org.opencontainers.image.title="Mikhmonv2 for MikroTik ARM64"
+LABEL org.opencontainers.image.description="Lightweight Mikhmonv2 for hAP ax² (~30MB)"
+LABEL org.opencontainers.image.source="https://github.com/iamlatif/mikhmonv2"
+
+# Install PHP runtime + standard extensions (slightly more than arm32)
+RUN apk add --no-cache \
+    php81 \
+    php81-session \
+    php81-gd \
+    php81-json \
+    php81-mbstring \
+    php81-curl \
+    php81-openssl \
+    php81-ctype \
+    php81-fileinfo \
+    php81-iconv \
+    php81-simplexml \
+    php81-dom \
+    php81-pdo \
+    php81-pdo_sqlite \
+    php81-sqlite3 \
+    php81-tokenizer \
+    php81-xml \
+    php81-xmlwriter \
+    && rm -rf /var/cache/apk/* \
+    /usr/share/php81/*/doc \
+    /usr/share/php81/*/tests \
+    /tmp/* /var/tmp/*
+
+WORKDIR /var/www
+
+COPY --chown=nobody:nogroup . /var/www/
+
+RUN mkdir -p /var/www/data /tmp/php_sessions \
+    && chown -R nobody:nogroup /var/www/data /tmp/php_sessions
+
+ENV PHP_CLI_SERVER_WORKERS=4
+ENV PHP_MEMORY_LIMIT=64M
+ENV PHP_UPLOAD_MAX_FILESIZE=4M
+ENV PHP_POST_MAX_SIZE=4M
+
+EXPOSE 80
+
+USER nobody
+
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www", "-d", "session.save_path=/tmp/php_sessions", "-d", "memory_limit=64M", "-d", "upload_max_filesize=4M"]

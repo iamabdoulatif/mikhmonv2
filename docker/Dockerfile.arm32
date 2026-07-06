@@ -1,0 +1,60 @@
+# =============================================================================
+# Mikhmonv2 - Ultra-light Docker image for MikroTik hAP ax lite (ARM32)
+# Target size: ~20 MB compressed
+# Architecture: linux/arm/v7
+# Base: Alpine Linux 3.18
+# Server: PHP 8.1 built-in web server (zero overhead, single-process)
+# =============================================================================
+
+FROM alpine:3.18
+
+LABEL maintainer="iamlatif"
+LABEL org.opencontainers.image.title="Mikhmonv2 for MikroTik ARM32"
+LABEL org.opencontainers.image.description="Ultra-lightweight Mikhmonv2 for hAP ax lite (~20MB)"
+LABEL org.opencontainers.image.source="https://github.com/iamlatif/mikhmonv2"
+
+# Install minimal PHP runtime + required extensions from Alpine repos
+# We deliberately AVOID nginx/php-fpm to save ~15-20 MB
+RUN apk add --no-cache \
+    php81 \
+    php81-session \
+    php81-gd \
+    php81-json \
+    php81-mbstring \
+    php81-curl \
+    php81-openssl \
+    php81-ctype \
+    php81-fileinfo \
+    php81-iconv \
+    php81-simplexml \
+    php81-dom \
+    && rm -rf /var/cache/apk/* \
+    /usr/share/php81/*/doc \
+    /usr/share/php81/*/tests \
+    /tmp/* /var/tmp/*
+
+# Create app directory
+WORKDIR /var/www
+
+# Copy application as a SINGLE layer (flattened feel)
+COPY --chown=nobody:nogroup . /var/www/
+
+# Create persistent data directory (bind-mount point for Docker volume)
+RUN mkdir -p /var/www/data /tmp/php_sessions \
+    && chown -R nobody:nogroup /var/www/data /tmp/php_sessions
+
+# PHP built-in server config (production-safe for low-traffic hotspot admin)
+ENV PHP_CLI_SERVER_WORKERS=2
+ENV PHP_MEMORY_LIMIT=32M
+ENV PHP_UPLOAD_MAX_FILESIZE=2M
+ENV PHP_POST_MAX_SIZE=2M
+
+# Expose HTTP port
+EXPOSE 80
+
+# Run as unprivileged user
+USER nobody
+
+# Use PHP built-in server (saves 15-20MB vs nginx+php-fpm)
+# MikroTik hAP ax lite has limited RAM; this keeps memory < 30MB at runtime
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www", "-d", "session.save_path=/tmp/php_sessions", "-d", "memory_limit=32M", "-d", "upload_max_filesize=2M"]

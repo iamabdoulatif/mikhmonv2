@@ -1,0 +1,286 @@
+# =============================================================================
+# GitHub Actions: Build & Push Mikhmonv2 for MikroTik ARM routers
+# Targets:
+#   - linux/arm/v7  (hAP ax lite)      ~20 MB  tag: mikrotik-arm32
+#   - linux/arm64   (hAP ax²)          ~30 MB  tag: mikrotik-arm64
+#   - linux/arm64   (hAP ax³/RB4011)   ~45 MB  tag: mikrotik-arm64-full
+# Uses Skopeo for image inspection, copy & flatten optimization
+# =============================================================================
+
+name: Docker MikroTik ARM Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*', 'mikrotik*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag_suffix:
+        description: 'Tag suffix (e.g. beta1, rc2)'
+        required: false
+        default: ''
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: iamlatif/mikhmonv2
+
+jobs:
+  # ===========================================================================
+  # Build ARM32 image (hAP ax lite) ~20MB
+  # ===========================================================================
+  build-arm32:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (ARM emulation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push ARM32 (hAP ax lite)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.arm32
+          platforms: linux/arm/v7
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:mikrotik-arm32${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }}
+          cache-from: type=gha,scope=arm32
+          cache-to: type=gha,mode=max,scope=arm32
+          provenance: false
+
+      - name: Install Skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo
+
+      - name: Skopeo inspect ARM32 image
+        run: |
+          echo "=== Image inspection (ARM32) ==="
+          skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm32${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
+            --format 'Size: {{.Size}} bytes ({{printf "%.2f" (divf .Size 1048576)}} MB)\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
+
+      - name: Skopeo copy to local OCI (flatten prep)
+        run: |
+          mkdir -p ./oci-arm32
+          skopeo copy docker://${{ env.IMAGE_NAME }}:mikrotik-arm32${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
+            dir:./oci-arm32
+          echo "OCI manifest layers:"
+          cat ./oci-arm32/manifest.json | jq '.layers | length'
+
+  # ===========================================================================
+  # Build ARM64 image (hAP ax²) ~30MB
+  # ===========================================================================
+  build-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push ARM64 (hAP ax²)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.arm64
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:mikrotik-arm64${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }}
+          cache-from: type=gha,scope=arm64
+          cache-to: type=gha,mode=max,scope=arm64
+          provenance: false
+
+      - name: Install Skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo
+
+      - name: Skopeo inspect ARM64 image
+        run: |
+          echo "=== Image inspection (ARM64) ==="
+          skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm64${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
+            --format 'Size: {{.Size}} bytes ({{printf "%.2f" (divf .Size 1048576)}} MB)\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
+
+      - name: Skopeo copy to local OCI
+        run: |
+          mkdir -p ./oci-arm64
+          skopeo copy docker://${{ env.IMAGE_NAME }}:mikrotik-arm64${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
+            dir:./oci-arm64
+
+  # ===========================================================================
+  # Build ARM64-FULL image (hAP ax³ / RB4011) ~45MB
+  # ===========================================================================
+  build-arm64-full:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push ARM64-FULL (hAP ax³ / RB4011)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.arm64-full
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:mikrotik-arm64-full${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }}
+          cache-from: type=gha,scope=arm64-full
+          cache-to: type=gha,mode=max,scope=arm64-full
+          provenance: false
+
+      - name: Install Skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo
+
+      - name: Skopeo inspect ARM64-FULL image
+        run: |
+          echo "=== Image inspection (ARM64-FULL) ==="
+          skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm64-full${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
+            --format 'Size: {{.Size}} bytes ({{printf "%.2f" (divf .Size 1048576)}} MB)\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
+
+      - name: Skopeo copy to local OCI
+        run: |
+          mkdir -p ./oci-arm64-full
+          skopeo copy docker://${{ env.IMAGE_NAME }}:mikrotik-arm64-full${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
+            dir:./oci-arm64-full
+
+  # ===========================================================================
+  # Create flattened (squashed) variants via Skopeo + manifest merge
+  # ===========================================================================
+  flatten-images:
+    needs: [build-arm32, build-arm64, build-arm64-full]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Skopeo + jq
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo jq
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Skopeo flatten ARM32 (single layer)
+        run: |
+          TAG="mikrotik-arm32${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }}"
+          FLAT_TAG="mikrotik-arm32-flat${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }}"
+          
+          # Download image as OCI
+          mkdir -p /tmp/oci-arm32
+          skopeo copy docker://${{ env.IMAGE_NAME }}:${TAG} dir:/tmp/oci-arm32
+          
+          echo "Original layers:"
+          jq '.layers | length' /tmp/oci-arm32/manifest.json
+          
+          # Flatten: create single tar from all layer tars, then rebuild
+          mkdir -p /tmp/flat-rootfs
+          for layer in $(jq -r '.layers[].digest' /tmp/oci-arm32/manifest.json | sed 's/sha256://'); do
+            tar -xf /tmp/oci-arm32/${layer} -C /tmp/flat-rootfs 2>/dev/null || true
+          done
+          
+          # Create new single-layer tar
+          tar -cf /tmp/flat-layer.tar -C /tmp/flat-rootfs .
+          
+          # Push flattened image back (using skopeo copy with dir transport)
+          mkdir -p /tmp/oci-flat
+          cp /tmp/oci-arm32/manifest.json /tmp/oci-flat/
+          cp /tmp/flat-layer.tar /tmp/oci-flat/
+          
+          # Update manifest for single layer (simplified approach)
+          # In production, use umoci or buildah for proper flattening
+          # Here we just verify the concept
+          echo "Flattened rootfs size:"
+          du -sh /tmp/flat-rootfs
+          
+          echo "Flat variant prepared. Use buildah for full flattening:"
+          echo "  buildah bud --layers=false -t ${{ env.IMAGE_NAME }}:${FLAT_TAG} -f docker/Dockerfile.arm32 ."
+
+      - name: Tag latest aliases (on main branch)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          skopeo copy docker://${{ env.IMAGE_NAME }}:mikrotik-arm32 docker://${{ env.IMAGE_NAME }}:mikrotik-latest-arm32
+          skopeo copy docker://${{ env.IMAGE_NAME }}:mikrotik-arm64 docker://${{ env.IMAGE_NAME }}:mikrotik-latest-arm64
+          skopeo copy docker://${{ env.IMAGE_NAME }}:mikrotik-arm64-full docker://${{ env.IMAGE_NAME }}:mikrotik-latest-arm64-full
+          echo "Latest tags updated."
+
+  # ===========================================================================
+  # Verify image sizes meet targets
+  # ===========================================================================
+  verify-sizes:
+    needs: [build-arm32, build-arm64, build-arm64-full]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo bc
+
+      - name: Check ARM32 size (< 25 MB)
+        run: |
+          SIZE=$(skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm32${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} --format '{{.Size}}')
+          MB=$(echo "scale=2; $SIZE / 1048576" | bc)
+          echo "ARM32 image size: ${MB} MB"
+          if (( $(echo "$MB > 25" | bc -l) )); then
+            echo "ERROR: ARM32 image exceeds 25 MB target!"
+            exit 1
+          fi
+
+      - name: Check ARM64 size (< 35 MB)
+        run: |
+          SIZE=$(skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm64${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} --format '{{.Size}}')
+          MB=$(echo "scale=2; $SIZE / 1048576" | bc)
+          echo "ARM64 image size: ${MB} MB"
+          if (( $(echo "$MB > 35" | bc -l) )); then
+            echo "ERROR: ARM64 image exceeds 35 MB target!"
+            exit 1
+          fi
+
+      - name: Check ARM64-FULL size (< 50 MB)
+        run: |
+          SIZE=$(skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm64-full${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} --format '{{.Size}}')
+          MB=$(echo "scale=2; $SIZE / 1048576" | bc)
+          echo "ARM64-FULL image size: ${MB} MB"
+          if (( $(echo "$MB > 50" | bc -l) )); then
+            echo "ERROR: ARM64-FULL image exceeds 50 MB target!"
+            exit 1
+          fi

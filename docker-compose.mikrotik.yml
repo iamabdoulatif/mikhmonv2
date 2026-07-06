@@ -1,0 +1,51 @@
+# =============================================================================
+# Docker Compose for MikroTik RouterOS v7 Container
+# Use this on your MikroTik hAP ax² / ax³ / RB4011 with RouterOS v7.5+
+# The image is pulled from Docker Hub: iamlatif/mikhmonv2:mikrotik-*
+# =============================================================================
+
+version: "3"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Choose ONE of the three variants below based on your MikroTik model:
+  # ---------------------------------------------------------------------------
+
+  # OPTION A: hAP ax lite (ARM32, ~20 MB)
+  mikhmonv2:
+    image: iamlatif/mikhmonv2:mikrotik-arm32
+    container_name: mikhmonv2
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - mikhmon_data:/var/www/data
+    environment:
+      - PHP_MEMORY_LIMIT=32M
+
+  # OPTION B: hAP ax² (ARM64, ~30 MB) -- UNCOMMENT IF NEEDED
+  # mikhmonv2:
+  #   image: iamlatif/mikhmonv2:mikrotik-arm64
+  #   container_name: mikhmonv2
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - mikhmon_data:/var/www/data
+  #   environment:
+  #     - PHP_MEMORY_LIMIT=64M
+
+  # OPTION C: hAP ax³ / RB4011 (ARM64 full, ~45 MB) -- UNCOMMENT IF NEEDED
+  # mikhmonv2:
+  #   image: iamlatif/mikhmonv2:mikrotik-arm64-full
+  #   container_name: mikhmonv2
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - mikhmon_data:/var/www/data
+  #   environment:
+  #     - PHP_MEMORY_LIMIT=128M
+
+volumes:
+  mikhmon_data:
