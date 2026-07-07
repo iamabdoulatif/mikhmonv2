@@ -1,0 +1,50 @@
+# =============================================================================
+# One-shot cleanup: delete Docker Hub tags that still embed the old
+# include/config.php (router session/credentials), i.e. everything built
+# before commit 91415e2 moved runtime config to the data/ volume.
+# Trigger manually: gh workflow run docker-hub-cleanup.yml
+# =============================================================================
+
+name: Docker Hub Tag Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Space-separated tags to delete'
+        required: true
+        default: 'latest amd64 arm64 armv7 latest-amd64 latest-arm64 latest-armv7'
+
+env:
+  REPO: iamlatif/mikhmonv2
+
+jobs:
+  delete-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete tags via Docker Hub API
+        env:
+          DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DH_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login \
+            -H "Content-Type: application/json" \
+            -d "{\"username\": \"${DH_USER}\", \"password\": \"${DH_PASS}\"}" | jq -r .token)
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "ERROR: Docker Hub login failed"; exit 1
+          fi
+          FAILED=0
+          for t in ${{ inputs.tags }}; do
+            CODE=$(curl -s -o /tmp/resp.txt -w "%{http_code}" -X DELETE \
+              -H "Authorization: JWT ${TOKEN}" \
+              "https://hub.docker.com/v2/repositories/${REPO}/tags/${t}/")
+            if [ "$CODE" = "204" ] || [ "$CODE" = "200" ]; then
+              echo "deleted: ${t}"
+            elif [ "$CODE" = "404" ]; then
+              echo "already absent: ${t}"
+            else
+              echo "FAILED (${CODE}): ${t} — $(cat /tmp/resp.txt)"
+              FAILED=1
+            fi
+          done
+          exit $FAILED
