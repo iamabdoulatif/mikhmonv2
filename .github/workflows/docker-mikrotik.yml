@@ -70,7 +70,7 @@ jobs:
         run: |
           echo "=== Image inspection (ARM32) ==="
           skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm32${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
-            --format 'Size: {{.Size}} bytes ({{printf "%.2f" (divf .Size 1048576)}} MB)\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
+            --format 'Size: {{.Size}} bytes\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
 
       - name: Skopeo copy to local OCI (flatten prep)
         run: |
@@ -123,7 +123,7 @@ jobs:
         run: |
           echo "=== Image inspection (ARM64) ==="
           skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm64${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
-            --format 'Size: {{.Size}} bytes ({{printf "%.2f" (divf .Size 1048576)}} MB)\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
+            --format 'Size: {{.Size}} bytes\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
 
       - name: Skopeo copy to local OCI
         run: |
@@ -174,7 +174,7 @@ jobs:
         run: |
           echo "=== Image inspection (ARM64-FULL) ==="
           skopeo inspect docker://${{ env.IMAGE_NAME }}:mikrotik-arm64-full${{ github.event.inputs.tag_suffix && format('-{0}', github.event.inputs.tag_suffix) || '' }} \
-            --format 'Size: {{.Size}} bytes ({{printf "%.2f" (divf .Size 1048576)}} MB)\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
+            --format 'Size: {{.Size}} bytes\nLayers: {{len .Layers}}\nArchitecture: {{.Architecture}}\n'
 
       - name: Skopeo copy to local OCI
         run: |
