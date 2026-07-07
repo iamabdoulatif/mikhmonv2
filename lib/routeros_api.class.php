@@ -341,6 +341,16 @@ class RouterosAPI
                 $this->debug('>>> [' . $LENGTH . ', ' . $STATUS['unread_bytes'] . ']' . $_);
             }
 
+            // Anti-infinite-loop guard: if the peer closed the connection (eof)
+            // or the read stalled past the socket timeout before the trailing
+            // "!done" arrived, stop reading instead of spinning forever. Without
+            // this, a truncated/interrupted RouterOS reply (seen on some v7
+            // responses or when the link drops mid-response) hangs the request
+            // and the page "loads" indefinitely.
+            if (!$STATUS['unread_bytes'] && ($STATUS['eof'] || $STATUS['timed_out'])) {
+                break;
+            }
+
             if ((!$this->connected && !$STATUS['unread_bytes']) || ($this->connected && !$STATUS['unread_bytes'] && $receiveddone)) {
                 break;
             }
