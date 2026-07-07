@@ -60,6 +60,8 @@ if ($_SESSION['theme'] == "") {
 
 // load config
 include_once('./include/headhtml.php');
+// SafelinkHub palette override (admin area only, not the in-session app)
+echo '<link rel="stylesheet" href="css/safelinkhub-admin.css?t=' . filemtime('./css/safelinkhub-admin.css') . '">';
 include('./include/configload.php');
 include('./include/readcfg.php');
 

@@ -21,21 +21,29 @@ session_start();
 ?>
 
 <style>
-  .slh-login-shell{min-height:calc(100vh - 20px);display:flex;align-items:center;justify-content:center;padding:10px;background:radial-gradient(circle at 20% 20%,rgba(32,168,216,.18),transparent 28%),radial-gradient(circle at 80% 10%,rgba(248,108,107,.12),transparent 26%)}
+  /* SafelinkHub palette: amber #eab308, warm black #1c1917, cream #fff3ed */
+  body{background:#1c1917!important;color:#fff3ed}
+  .slh-login-shell{min-height:calc(100vh - 20px);display:flex;align-items:center;justify-content:center;padding:10px;background:radial-gradient(circle at 20% 20%,rgba(234,179,8,.14),transparent 30%),radial-gradient(circle at 80% 10%,rgba(255,243,237,.06),transparent 26%)}
   .slh-login-card{width:100%;max-width:360px;margin:0 auto;padding-top:0;overflow:hidden;border-radius:12px}
-  .slh-login-card .card-header{margin-bottom:0;padding:14px 10px;text-align:center;text-transform:uppercase;letter-spacing:.08em}
+  .slh-login-card .card{background:#1c1917!important;border:1px solid rgba(234,179,8,.35)}
+  .slh-login-card .card-header{margin-bottom:0;padding:14px 10px;text-align:center;text-transform:uppercase;letter-spacing:.08em;background:#eab308!important}
+  .slh-login-card .card-header h3{color:#1c1917!important;margin:0}
   .slh-login-body{padding:26px 24px 22px}
   .slh-brand-logo{width:64px;height:64px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
   .slh-brand-logo img{max-width:64px;max-height:64px}
-  .slh-brand-title{font-size:24px;font-weight:800;line-height:1.1}
-  .slh-brand-subtitle{font-size:11px;font-weight:700;letter-spacing:.16em;margin-top:5px}
-  .slh-phone{display:inline-block;margin-top:12px;font-weight:700}
-  .slh-role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:22px 0;border-radius:5px;overflow:hidden}
-  .slh-role-tabs span{padding:12px 4px;text-align:center;font-weight:700;background:rgba(115,129,143,.12)}
-  .slh-role-tabs .active{border-bottom:2px solid currentColor;border-radius:0}
+  .slh-brand-title{font-size:24px;font-weight:800;line-height:1.1;color:#fff3ed}
+  .slh-brand-subtitle{font-size:11px;font-weight:700;letter-spacing:.16em;margin-top:5px;color:#eab308!important}
+  .slh-phone{display:inline-block;margin-top:12px;font-weight:700;color:#fff3ed!important}
+  .slh-role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:22px 0;border-radius:5px;overflow:hidden;border:1px solid rgba(234,179,8,.25)}
+  .slh-role-tabs span{padding:12px 4px;text-align:center;font-weight:700;background:rgba(255,243,237,.05);color:rgba(255,243,237,.65)!important}
+  .slh-role-tabs .active{border-bottom:2px solid #eab308;border-radius:0;color:#eab308!important;background:rgba(234,179,8,.12)}
   .slh-input{height:44px;margin-bottom:12px;font-size:15px}
-  .slh-login-button{width:100%;height:46px;margin-top:8px;font-size:16px;font-weight:800}
-  .slh-powered{padding:18px 10px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;border-top:1px solid rgba(115,129,143,.25)}
+  .slh-login-body .form-control{background:rgba(255,243,237,.07)!important;color:#fff3ed!important;border:1px solid rgba(234,179,8,.35)!important}
+  .slh-login-body .form-control::placeholder{color:rgba(255,243,237,.55)}
+  .slh-login-body .form-control:focus{border-color:#eab308!important;outline:none}
+  .slh-login-button{width:100%;height:46px;margin-top:8px;font-size:16px;font-weight:800;background:#eab308!important;color:#1c1917!important;border:none;border-radius:4px}
+  .slh-login-button:hover{filter:brightness(1.08)}
+  .slh-powered{padding:18px 10px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;border-top:1px solid rgba(234,179,8,.25);color:rgba(255,243,237,.6)!important}
   @media (max-width:576px){.slh-login-shell{align-items:flex-start;padding-top:20px}.slh-login-card{max-width:340px}.slh-login-body{padding:22px 18px}}
 </style>
 

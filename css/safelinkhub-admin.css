@@ -1,0 +1,91 @@
+/* =========================================================================
+   SafelinkHub admin palette override — loaded by admin.php only.
+   Palette: amber #eab308 · warm black #1c1917 · cream #fff3ed
+   Semantic colors (bg-danger / bg-success / bg-warning) are left untouched.
+   ========================================================================= */
+
+html, body {
+  background-color: #1c1917 !important;
+  color: #fff3ed;
+}
+
+/* Chrome / containers */
+.navbar,
+.sidenav {
+  background-color: #1c1917 !important;
+  border-color: rgba(234, 179, 8, .30) !important;
+}
+.navbar { border-bottom: 1px solid rgba(234, 179, 8, .30) !important; }
+.sidenav { border-right: 1px solid rgba(234, 179, 8, .20) !important; }
+.navbar-hover:hover { background-color: rgba(234, 179, 8, .15) !important; }
+
+#brand { color: #eab308 !important; }
+.navbar-left a, .navbar-right a { color: #fff3ed; }
+.navbar a:hover { color: #eab308 !important; }
+
+.sidenav a, .dropdown-btn { color: rgba(255, 243, 237, .85) !important; }
+.sidenav a:hover, .dropdown-btn:hover { color: #eab308 !important; }
+.sidenav .active, .dropdown-btn.active { color: #eab308 !important; }
+.dropdown-container { background-color: rgba(255, 243, 237, .03); }
+
+.ses, .dropd {
+  background-color: #1c1917 !important;
+  color: #fff3ed !important;
+  border: 1px solid rgba(234, 179, 8, .30) !important;
+}
+
+/* Cards / boxes / modals */
+.box, .card {
+  background-color: rgba(255, 243, 237, .045) !important;
+  border-color: rgba(255, 243, 237, .10) !important;
+}
+.card-header {
+  background-color: rgba(234, 179, 8, .12) !important;
+  border-bottom: 1px solid rgba(234, 179, 8, .30) !important;
+}
+.modal-window > div {
+  background: #1c1917 !important;
+  color: #fff3ed !important;
+  border: 1px solid rgba(234, 179, 8, .35) !important;
+}
+
+/* Primary accent */
+.bg-primary { background-color: #eab308 !important; }
+.bg-primary, .bg-primary h1, .bg-primary h3, .bg-primary i { color: #1c1917 !important; }
+.text-primary { color: #eab308 !important; }
+
+/* Text / tables */
+.table td, .table th, a, th { color: #fff3ed; }
+a:hover { color: #eab308; }
+.table td, .table th { border-color: rgba(255, 243, 237, .10) !important; }
+.table-hover:hover tbody tr:hover { background-color: rgba(234, 179, 8, .08) !important; }
+
+/* Forms */
+.form-control {
+  background-color: rgba(255, 243, 237, .06) !important;
+  color: #fff3ed !important;
+  border: 1px solid rgba(234, 179, 8, .30) !important;
+}
+.form-control:focus {
+  color: #fff3ed !important;
+  border-color: #eab308 !important;
+  outline: none;
+}
+.form-control::placeholder { color: rgba(255, 243, 237, .55) !important; }
+
+/* Input groups (settings forms, upload logo) */
+.group-item {
+  background-color: rgba(255, 243, 237, .06) !important;
+  color: #fff3ed !important;
+  border: 1px solid rgba(234, 179, 8, .30) !important;
+}
+input[type="submit"].group-item {
+  background-color: #eab308 !important;
+  color: #1c1917 !important;
+  border: none !important;
+  font-weight: 700;
+}
+
+/* pace.js page-load progress bar */
+.pace .pace-progress { background: #eab308 !important; }
+.pace .pace-activity { border-top-color: #eab308 !important; border-left-color: #eab308 !important; }
