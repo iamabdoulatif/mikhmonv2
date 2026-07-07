@@ -50,7 +50,7 @@ if (!isset($_SESSION["mikhmon"])) {
   include('./include/quickbt.php');
 
 // load config
-  include('./include/config.php');
+  include('./include/configload.php');
   include('./include/readcfg.php');
 
 // theme  

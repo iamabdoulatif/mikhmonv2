@@ -23,7 +23,7 @@ ob_start("ob_gzhandler");
 $session = $_GET['session'];
 require('../lib/routeros_api.class.php');
 include('../lib/formatbytesbites.php');
-include('../include/config.php');
+include('../include/configload.php');
 
 // theme  
 include('../include/theme.php');

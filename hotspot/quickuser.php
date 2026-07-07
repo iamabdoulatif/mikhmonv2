@@ -37,7 +37,7 @@ include('../lang/'.$langid.'.php');
 // quick bt
 include('../include/quickbt.php');
 // load config
-include('../include/config.php');
+include('../include/configload.php');
 include('../include/readcfg.php');
 
 // routeros api

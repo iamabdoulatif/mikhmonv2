@@ -266,7 +266,7 @@ include('./include/info.php');
   <select class="connect optfa ses text-right mr-t-10 pd-5">
     <option id="MikhmonSession" value="<?= $session; ?>"><?= $hotspotname; ?></option>
       <?php
-      foreach (file('./include/config.php') as $line) {
+      foreach (file(MIKHMON_CONFIG_FILE) as $line) {
         $sesname = explode("'", $line)[1];
         if ($sesname == "" || $sesname== "mikhmon") {
         } else {

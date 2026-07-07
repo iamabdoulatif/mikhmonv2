@@ -24,7 +24,7 @@ if (!isset($_SESSION["mikhmon"])) {
 $session = $_GET['session'];
 $ping = $_GET['ping'];
 if(isset($ping) && !empty($session)){
-    include_once('../include/config.php');
+    include_once('../include/configload.php');
     $iphost = explode('!', $data[$session][1])[1];
     $host=explode(":",$iphost)[0];
     $port=explode(":",$iphost)[1];

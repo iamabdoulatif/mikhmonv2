@@ -25,15 +25,15 @@ if (!isset($_SESSION["mikhmon"])) {
 
   if ($id == "settings" && explode("-",$router)[0] == "new") {
     $data = '$data';
-    $f = fopen('./include/config.php', 'a');
+    $f = fopen(MIKHMON_CONFIG_FILE, 'a');
     fwrite($f, "\n'$'data['".$router."'] = array ('1'=>'".$router."!','".$router."@|@','".$router."#|#','".$router."%','".$router."^','".$router."&Rp','".$router."*10','".$router."(1','".$router.")','".$router."=10','".$router."@!@disable');");
     fclose($f);
     $search = "'$'data";
     $replace = (string)"$data";
-    $file = file("./include/config.php");
-    $content = file_get_contents("./include/config.php");
+    $file = file(MIKHMON_CONFIG_FILE);
+    $content = file_get_contents(MIKHMON_CONFIG_FILE);
     $newcontent = str_replace((string)$search, (string)$replace, "$content");
-    file_put_contents("./include/config.php", "$newcontent");
+    file_put_contents(MIKHMON_CONFIG_FILE, "$newcontent");
     echo "<script>window.location='./admin.php?id=settings&session=" . $router . "'</script>";
   }
 
@@ -65,10 +65,10 @@ if (!isset($_SESSION["mikhmon"])) {
     $replace = array('1' => "$sesname!$siphost", "$sesname@|@$suserhost", "$sesname#|#$spasswdhost", "$sesname%$shotspotname", "$sesname^$sdnsname", "$sesname&$scurrency", "$sesname*$sreload", "$sesname($siface", "$sesname)$sinfolp", "$sesname=$sidleto", "'$sesname'", "$sesname@!@$slivereport");
 
     for ($i = 1; $i < 15; $i++) {
-      $file = file("./include/config.php");
-      $content = file_get_contents("./include/config.php");
+      $file = file(MIKHMON_CONFIG_FILE);
+      $content = file_get_contents(MIKHMON_CONFIG_FILE);
       $newcontent = str_replace((string)$search[$i], (string)$replace[$i], "$content");
-      file_put_contents("./include/config.php", "$newcontent");
+      file_put_contents(MIKHMON_CONFIG_FILE, "$newcontent");
     }
     $_SESSION["connect"] = "";
     echo "<script>window.location='./admin.php?id=settings&session=" . $sesname . "'</script>";

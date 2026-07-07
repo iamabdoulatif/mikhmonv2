@@ -21,7 +21,7 @@ error_reporting(0);
 $session = $_GET['session'];
 $uname = $_GET['name'];
 
-include_once('../include/config.php');
+include_once('../include/configload.php');
 $iphost=explode('!',$data[$session][1])[1]; 
 $userhost=explode('@|@',$data[$session][2])[1];
 $passwdhost=explode('#|#',$data[$session][3])[1]; 

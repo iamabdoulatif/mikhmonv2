@@ -36,10 +36,10 @@ if (!isset($_SESSION["mikhmon"])) {
     $ganti = array('1' => "mikhmon<|<$suseradm", "mikhmon>|>$spassadm");
 
     for ($i = 1; $i < 3; $i++) {
-      $file = file("./include/config.php");
-      $content = file_get_contents("./include/config.php");
+      $file = file(MIKHMON_CONFIG_FILE);
+      $content = file_get_contents(MIKHMON_CONFIG_FILE);
       $newcontent = str_replace((string)$cari[$i], (string)$ganti[$i], "$content");
-      file_put_contents("./include/config.php", "$newcontent");
+      file_put_contents(MIKHMON_CONFIG_FILE, "$newcontent");
     }
 
   
@@ -79,7 +79,7 @@ if (!isset($_SESSION["mikhmon"])) {
             <div class="card-body">
             <div class="row">
               <?php
-              foreach (file('./include/config.php') as $line) {
+              foreach (file(MIKHMON_CONFIG_FILE) as $line) {
                 $value = explode("'", $line)[1];
                 if ($value == "" || $value == "mikhmon") {
                 } else { ?>

@@ -27,7 +27,7 @@ if (!isset($_SESSION["mikhmon"])) {
 	$serveractive = $_GET['server'];
 
 // load config
-	include('../include/config.php');
+	include('../include/configload.php');
 	include('../include/readcfg.php');
 	
 // lang

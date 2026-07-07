@@ -26,7 +26,7 @@ $session = $_GET['session'];
 $interface = $_GET['iface'];
 //echo $interface
 // load config
-include('../include/config.php');
+include('../include/configload.php');
 include('../include/readcfg.php');
 
 // routeros api

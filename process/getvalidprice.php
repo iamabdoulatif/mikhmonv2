@@ -25,7 +25,7 @@ if (!isset($_SESSION["mikhmon"])) {
   $session = $_GET['session'];
 
 // load config
-  include('../include/config.php');
+  include('../include/configload.php');
   $iphost = explode('!', $data[$session][1])[1];
   $userhost = explode('@|@', $data[$session][2])[1];
   $passwdhost = explode('#|#', $data[$session][3])[1];

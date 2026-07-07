@@ -26,7 +26,7 @@ $session = $_GET['session'];
 
 
 // load config
-  include('../include/config.php');
+  include('../include/configload.php');
   include('../include/readcfg.php');
   include_once(__DIR__ . '/../include/mikhmon_compat.php');
 

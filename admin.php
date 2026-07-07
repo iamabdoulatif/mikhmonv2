@@ -60,7 +60,7 @@ if ($_SESSION['theme'] == "") {
 
 // load config
 include_once('./include/headhtml.php');
-include('./include/config.php');
+include('./include/configload.php');
 include('./include/readcfg.php');
 
 include_once('./lib/routeros_api.class.php');
@@ -145,8 +145,8 @@ if ($id == "login" || substr($url, -1) == "p") {
   include_once('./process/shutdown.php');
 } elseif ($id == "remove-session" && $session != "") {
   include_once('./include/menu.php');
-  $fc = file("./include/config.php" );
-  $f = fopen("./include/config.php", "w");
+  $fc = file(MIKHMON_CONFIG_FILE);
+  $f = fopen(MIKHMON_CONFIG_FILE, "w");
   $q = "'";
   $rem = '$data['.$q.$session.$q.']';
   foreach ($fc as $line) {

@@ -31,7 +31,7 @@ if (!isset($_SESSION["mikhmon"])) {
   $session = $_GET['session'];
 
 // load config
-  include('../include/config.php');
+  include('../include/configload.php');
   include('../include/readcfg.php');
 
   include('../lib/formatbytesbites.php');
