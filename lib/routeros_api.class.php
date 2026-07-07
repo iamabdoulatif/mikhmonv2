@@ -324,7 +324,16 @@ class RouterosAPI
                 $retlen = 0;
                 while ($retlen < $LENGTH) {
                     $toread = $LENGTH - $retlen;
-                    $_ .= fread($this->socket, $toread);
+                    $chunk = fread($this->socket, $toread);
+                    if ($chunk === false || $chunk === '') {
+                        // Connection dropped or stalled in the middle of a word.
+                        // Bail out instead of looping forever on empty reads.
+                        $st = socket_get_status($this->socket);
+                        if ($st['eof'] || $st['timed_out']) {
+                            break;
+                        }
+                    }
+                    $_ .= $chunk;
                     $retlen = strlen($_);
                 }
                 $RESPONSE[] = $_;
