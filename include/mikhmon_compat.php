@@ -79,6 +79,17 @@ function mikhmon_save_sale_log($session, $scriptData) {
     if (!isset($data[$owner])) {
         $data[$owner] = [];
     }
+    // Idempotence : la clé unique d'une vente est son "name" (date-|-heure-|-user-|-...).
+    // Le rapport ré-appelle cette fonction à chaque affichage ; sans déduplication,
+    // le fichier JSON gonflerait sans limite avec des doublons.
+    $key = isset($scriptData['name']) ? $scriptData['name'] : null;
+    if ($key !== null) {
+        foreach ($data[$owner] as $existing) {
+            if (isset($existing['name']) && $existing['name'] === $key) {
+                return; // vente déjà persistée
+            }
+        }
+    }
     $data[$owner][] = $scriptData;
     file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
 }
@@ -105,11 +116,12 @@ function mikhmon_remove_sale_by_user($session, $username) {
     $json = file_get_contents($file);
     $data = json_decode($json, true) ?: [];
     foreach ($data as $owner => &$entries) {
-        $entries = array_filter($entries, function($e) use ($username) {
+        $entries = array_values(array_filter($entries, function($e) use ($username) {
             $parts = explode('-|-', isset($e['name']) ? $e['name'] : '');
             return (isset($parts[2]) ? $parts[2] : '') !== $username;
-        });
+        }));
     }
+    unset($entries); // rompt la référence du foreach (évite tout effet de bord ultérieur)
     file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
 }
 
@@ -168,7 +180,7 @@ function mikhmon_routeros_onlogin_script($validity, $price, $sprice, $profileNam
         $recordLine = '; :local mac $"mac-address"; :local time [/system clock get time]; :local date [/system clock get date]; :local month ""; :local day ""; :local year ""; :local montharray ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"); :if ([:pick $date 4] = "-") do={ :set year [:pick $date 0 4]; :set month [:pick $date 5 7]; :set day [:pick $date 8 10]; :local mnum [:tonum $month]; :set month [:pick $montharray ($mnum - 1)]; } else={ :set month [:pick $date 0 3]; :set day [:pick $date 4 6]; :set year [:pick $date 7 11]; }; :local datestr ("$month/$day/$year"); :local monthstr $month; :local owner ("$monthstr$year"); /system script add name="$datestr-|-$time-|-$user-|-'.$price.'-|-$address-|-$mac-|-' . $validity . '-|-'.$profileName.'-|-$comment" owner="$owner" source="$datestr" comment="mikhmon"';
     }
 
-    $onlogin = ':put (",'.$expmode.',' . $price . ',' . $validity . ','.$sprice.',,' . $lock . ',,"); {:local comment [ /ip hotspot user get [/ip hotspot user find where name="$user"] comment]; :local ucode [:pic $comment 0 2]; :if ($ucode = "vc" or $ucode = "up" or $comment = "") do={ :local date [/system clock get date]; :local time [/system clock get time]; :local month ""; :local day ""; :local year ""; :local montharray ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"); :if ([:pick $date 4] = "-") do={ :set year [:pick $date 0 4]; :set month [:pick $date 5 7]; :set day [:pick $date 8 10]; :local mnum [:tonum $month]; :set month [:pick $montharray ($mnum - 1)]; } else={ :set month [:pick $date 0 3]; :set day [:pick $date 4 6]; :set year [:pick $date 7 11]; }; :local datestr ("$month/$day/$year"); :local monthstr $month; :local owner ("$monthstr$year"); :local v "' . $validity . '"; :if ([:len $v] > 0) do={ :if ([/system scheduler find where name="$user"] = "") do={ /sys sch add name="$user" disable=no start-date=$date start-time=$time interval=$v; :delay 5s; :local exp [/sys sch get [/sys sch find where name="$user"] next-run]; :local explen [:len $exp]; :if ($explen = 8) do={ /ip hotspot user set comment="$datestr $exp" [find where name="$user"]; }; :if ($explen >= 15) do={ /ip hotspot user set comment="$exp" [find where name="$user"]; }; :delay 2s; /sys sch remove [find where name="$user"]; }; };';
+    $onlogin = ':put (",'.$expmode.',' . $price . ',' . $validity . ','.$sprice.',,' . $lock . ',,"); {:local comment [ /ip hotspot user get [/ip hotspot user find where name="$user"] comment]; :local ucode [:pick $comment 0 2]; :if ($ucode = "vc" or $ucode = "up" or $comment = "") do={ :local date [/system clock get date]; :local time [/system clock get time]; :local month ""; :local day ""; :local year ""; :local montharray ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"); :if ([:pick $date 4] = "-") do={ :set year [:pick $date 0 4]; :set month [:pick $date 5 7]; :set day [:pick $date 8 10]; :local mnum [:tonum $month]; :set month [:pick $montharray ($mnum - 1)]; } else={ :set month [:pick $date 0 3]; :set day [:pick $date 4 6]; :set year [:pick $date 7 11]; }; :local datestr ("$month/$day/$year"); :local monthstr $month; :local owner ("$monthstr$year"); :local v "' . $validity . '"; :if ([:len $v] > 0) do={ :if ([/system scheduler find where name="$user"] = "") do={ /sys sch add name="$user" disable=no start-date=$date start-time=$time interval=$v; :delay 5s; :local exp [/sys sch get [/sys sch find where name="$user"] next-run]; :local explen [:len $exp]; :if ($explen = 8) do={ /ip hotspot user set comment="$datestr $exp" [find where name="$user"]; }; :if ($explen >= 15) do={ /ip hotspot user set comment="$exp" [find where name="$user"]; }; :delay 2s; /sys sch remove [find where name="$user"]; }; };';
 
     $onlogin .= $recordLine;
 

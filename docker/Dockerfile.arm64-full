@@ -57,14 +57,19 @@ RUN mkdir -p /var/www/data /run/nginx /tmp/php_sessions \
     && chmod +x /entrypoint.sh
 
 # PHP-FPM config tuned for MikroTik limited resources
-RUN sed -i 's/^pm = dynamic/pm = ondemand/' /etc/php81/php-fpm.d/www.conf \
+# NOTE: Alpine's php81-fpm defaults to "listen = 127.0.0.1:9000". nginx + the
+# entrypoint expect a unix socket at /run/nginx/php-fpm.sock, so we MUST override
+# the listen directive here or every PHP request 502s (socket never created).
+RUN sed -i 's|^listen = .*|listen = /run/nginx/php-fpm.sock|' /etc/php81/php-fpm.d/www.conf \
+    && sed -i 's/^pm = dynamic/pm = ondemand/' /etc/php81/php-fpm.d/www.conf \
     && sed -i 's/^pm.max_children =.*/pm.max_children = 4/' /etc/php81/php-fpm.d/www.conf \
     && sed -i 's/^pm.start_servers =.*/pm.start_servers = 1/' /etc/php81/php-fpm.d/www.conf \
     && sed -i 's/^pm.min_spare_servers =.*/pm.min_spare_servers = 1/' /etc/php81/php-fpm.d/www.conf \
     && sed -i 's/^pm.max_spare_servers =.*/pm.max_spare_servers = 2/' /etc/php81/php-fpm.d/www.conf \
     && sed -i 's/;pm.process_idle_timeout =.*/pm.process_idle_timeout = 10s/' /etc/php81/php-fpm.d/www.conf \
-    && sed -i 's/^;listen.owner =.*/listen.owner = nobody/' /etc/php81/php-fpm.d/www.conf \
-    && sed -i 's/^;listen.group =.*/listen.group = nogroup/' /etc/php81/php-fpm.d/www.conf
+    && sed -i 's/^;listen.owner =.*/listen.owner = nginx/' /etc/php81/php-fpm.d/www.conf \
+    && sed -i 's/^;listen.group =.*/listen.group = nginx/' /etc/php81/php-fpm.d/www.conf \
+    && sed -i 's/^;listen.mode =.*/listen.mode = 0660/' /etc/php81/php-fpm.d/www.conf
 
 EXPOSE 80
 
