@@ -27,10 +27,15 @@ session_start();
     </div>
     <div class="card-body">
       <div class="text-center pd-5">
-        <img src="img/favicon.png" alt="MIKHMON Logo">
+        <img src="img/logo-safelinkhub.svg" alt="SafelinkHub Logo" width="90" height="99">
       </div>
       <div  class="text-center">
-      <span style="font-size: 25px; margin: 10px;">MIKHMON</span>
+      <span style="font-size: 25px; margin: 10px;">SafelinkHub</span>
+      </div>
+      <div class="text-center" style="margin-bottom:6px;">
+        <a href="tel:+2250709100552" style="text-decoration:none; font-size:14px;">
+          <i class="fa fa-phone"></i> +225 07 09 10 05 52
+        </a>
       </div>
       <center>
       <form autocomplete="off" action="" method="post">
@@ -61,6 +66,7 @@ session_start();
     </div>
   </div>
 </div>
-
-</body>
-</html>
+<?php
+// NOTE: no </body></html> here — admin.php appends its scripts and the
+// closing tags after this include; closing twice produced invalid HTML.
+?>

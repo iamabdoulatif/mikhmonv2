@@ -164,9 +164,14 @@ if ($id == "login" || substr($url, -1) == "p") {
   echo "<script>window.location='./admin.php?id=login'</script>";
 } elseif ($id == "remove-logo" && $logo != ""  && !empty($session)) {
   include_once('./include/menu.php');
+  // Path-traversal guard: only allow deleting uploaded logo files
+  // (logo-*.png inside ./img/), never arbitrary paths like ../include/config.php
+  $logo = basename($logo);
   $logopath = "./img/";
   $remlogo = $logopath . $logo;
-  unlink("$remlogo");
+  if (substr($logo, 0, 5) == "logo-" && substr($logo, -4) == ".png" && is_file($remlogo)) {
+    unlink("$remlogo");
+  }
   echo "<script>window.location='./admin.php?id=uplogo&session=" . $session . "'</script>";
 } elseif ($id == "editor"  && !empty($session)) {
   include_once('./include/menu.php');

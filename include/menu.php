@@ -243,7 +243,7 @@ $(document).ready(function(){
 <div id="notify"><div class="message"></div></div>
 <div id="temp"></div>
 <?php 
-include('./info.php');
+include('./include/info.php');
 } else { ?>
 
 <div id="navbar" class="navbar">
