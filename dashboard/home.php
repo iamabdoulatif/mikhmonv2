@@ -18,6 +18,7 @@
 session_start();
 // hide all error
 error_reporting(0);
+include_once(__DIR__ . '/../include/mikhmon_compat.php');
 if (!isset($_SESSION["mikhmon"])) {
   header("Location:../admin.php?id=login");
 } else {
@@ -29,6 +30,21 @@ if (!isset($_SESSION["mikhmon"])) {
   $timezone = $getclock[0]['time-zone-name'];
   $_SESSION['timezone'] = $timezone;
   date_default_timezone_set($timezone);
+  $todaySaleSource = mikhmon_date_to_legacy($clock['date']);
+  $monthSaleOwner = mikhmon_sale_owner_from_source($todaySaleSource);
+  if ($monthSaleOwner != "") {
+    mikhmon_get_sale_scripts($API, $session, array("?owner" => "$monthSaleOwner"));
+  }
+  $todaySaleSummary = mikhmon_sales_summary($session, $monthSaleOwner, $todaySaleSource);
+  $monthSaleSummary = mikhmon_sales_summary($session, $monthSaleOwner);
+  $dincome = mikhmon_format_money_amount($todaySaleSummary['total'], $currency, $cekindo);
+  $mincome = mikhmon_format_money_amount($monthSaleSummary['total'], $currency, $cekindo);
+  $_SESSION[$session.'idhr'] = $todaySaleSource;
+  $_SESSION[$session.'sdate'] = $todaySaleSource;
+  $_SESSION[$session.'totalHr'] = $todaySaleSummary['count'];
+  $_SESSION[$session.'totalBl'] = $monthSaleSummary['count'];
+  $_SESSION[$session.'dincome'] = $dincome;
+  $_SESSION[$session.'mincome'] = $mincome;
 
 // get system resource MikroTik
   $getresource = $API->comm("/system/resource/print");
@@ -120,10 +136,10 @@ if (!isset($_SESSION["mikhmon"])) {
             <div class="box-group-icon"><i class="fa fa-calendar"></i></div>
               <div class="box-group-area">
                 <span ><?= $_system_date_time ?><br>
-                    <?php 
+                    <?php
                     echo ucfirst($clock['date']) . " " . $clock['time'] . "<br>
                     ".$_uptime." : " . formatDTM($resource['uptime']);
-                    $_SESSION[$session.'sdate'] = $clock['date'];
+                    $_SESSION[$session.'sdate'] = $todaySaleSource;
                     ?>
                 </span>
               </div>
@@ -357,15 +373,11 @@ if (!isset($_SESSION["mikhmon"])) {
                     <div class="box-group-area">
                       <span >
                         <div id="reloadLreport">
-                          <?php 
-                          if ($_SESSION[$session.'sdate'] == $_SESSION[$session.'idhr']){
-                            echo $_income." <br/>" . "
+                          <?php
+                          echo $_income." <br/>" . "
                           ".$_today." " . $_SESSION[$session.'totalHr'] . "vcr : " . $currency . " " . $_SESSION[$session.'dincome']. "<br/>
-                          ".$_this_month." " . $_SESSION[$session.'totalBl'] . "vcr : " . $currency . " " . $_SESSION[$session.'mincome']; 
-                          }else{
-                            echo "<div id='loader' ><i><span> <i class='fa fa-circle-o-notch fa-spin'></i> ". $_processing." </i></div>";
-                          }
-                          ?>                       
+                          ".$_this_month." " . $_SESSION[$session.'totalBl'] . "vcr : " . $currency . " " . $_SESSION[$session.'mincome'];
+                          ?>
                         </div>
                     </span>
                 </div>

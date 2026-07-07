@@ -23,6 +23,7 @@ if (!isset($_SESSION["mikhmon"])) {
 } else {
 // array color
   $color = array('1' => 'bg-blue', 'bg-indigo', 'bg-purple', 'bg-pink', 'bg-red', 'bg-yellow', 'bg-green', 'bg-teal', 'bg-cyan', 'bg-grey', 'bg-light-blue');
+  include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
   ?>
 <div class="row">
@@ -60,7 +61,7 @@ if (!isset($_SESSION["mikhmon"])) {
         </div>
 <?php
 // get user profile
-$getprofile = $API->comm("/ip/hotspot/user/profile/print");
+$getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
 $TotalReg = count($getprofile);
 for ($i = 0; $i < $TotalReg; $i++) {
   $profiledetalis = $getprofile[$i];

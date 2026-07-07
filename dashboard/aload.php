@@ -36,8 +36,9 @@ include('../lang/'.$langid.'.php');
 // routeros api
   include_once('../lib/routeros_api.class.php');
   include_once('../lib/formatbytesbites.php');
-  $API = new RouterosAPI();
-  $API->debug = false;
+	  $API = new RouterosAPI();
+	  $API->debug = false;
+	  $API->timeout = 15;
 
 
 

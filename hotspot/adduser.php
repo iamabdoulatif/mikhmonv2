@@ -22,7 +22,8 @@ if (!isset($_SESSION["mikhmon"])) {
   header("Location:../admin.php?id=login");
 } else {
 
-  $getprofile = $API->comm("/ip/hotspot/user/profile/print");
+  include_once(__DIR__ . '/../include/mikhmon_compat.php');
+  $getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
   $srvlist = $API->comm("/ip/hotspot/print");
 
   if (isset($_POST['name'])) {

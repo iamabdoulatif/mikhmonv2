@@ -23,6 +23,7 @@ ini_set('max_execution_time', 300);
 if (!isset($_SESSION["mikhmon"])) {
   header("Location:../admin.php?id=login");
 } else {
+  include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
   if ($prof == "all") {
     $getuser = $API->comm("/ip/hotspot/user/print");
@@ -69,7 +70,7 @@ if (!isset($_SESSION["mikhmon"])) {
     ));
     
   }
-  $getprofile = $API->comm("/ip/hotspot/user/profile/print");
+  $getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
   $TotalReg2 = count($getprofile);
 }
 ?>

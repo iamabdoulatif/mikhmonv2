@@ -30,14 +30,13 @@ if (!isset($_SESSION["mikhmon"])) {
 ';
 } else {
 
+	include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
 // get user profile
-	$getprofile = $API->comm("/ip/hotspot/user/profile/print");
+	$getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
 	$TotalReg = count($getprofile);
 // count user profile
-	$countprofile = $API->comm("/ip/hotspot/user/profile/print", array(
-		"count-only" => "",
-	));
+	$countprofile = $TotalReg;
 }
 ?>
 <div class="row">
@@ -79,18 +78,19 @@ if (!isset($_SESSION["mikhmon"])) {
 for ($i = 0; $i < $TotalReg; $i++) {
 
 	$profiledetalis = $getprofile[$i];
-	$pid = $profiledetalis['.id'];
-	$pname = $profiledetalis['name'];
-	$psharedu = $profiledetalis['shared-users'];
-	$pratelimit = $profiledetalis['rate-limit'];
-	$ponlogin = $profiledetalis['on-login'];
+	$pid = isset($profiledetalis['.id']) ? $profiledetalis['.id'] : '';
+	$pname = isset($profiledetalis['name']) ? $profiledetalis['name'] : '';
+	$psharedu = isset($profiledetalis['shared-users']) ? $profiledetalis['shared-users'] : '';
+	$pratelimit = isset($profiledetalis['rate-limit']) ? $profiledetalis['rate-limit'] : '';
+	$ponlogin = isset($profiledetalis['on-login']) ? $profiledetalis['on-login'] : '';
+	$profileOnlogin = mikhmon_parse_profile_onlogin($ponlogin);
 	$getmonexpired = $API->comm("/system/scheduler/print", array(
     "?name" => "$pname",
   ));
-  $monexpired = $getmonexpired[0];
-  $monid = $monexpired['.id'];
-	$pmon = $monexpired['name'];
-	$chkpmon = $monexpired['disabled'];
+  $monexpired = isset($getmonexpired[0]) ? $getmonexpired[0] : array();
+  $monid = isset($monexpired['.id']) ? $monexpired['.id'] : '';
+	$pmon = isset($monexpired['name']) ? $monexpired['name'] : '';
+	$chkpmon = isset($monexpired['disabled']) ? $monexpired['disabled'] : 'true';
 	if(empty($pmon) || $chkpmon == "true"){$moncolor = "text-orange";}else{$moncolor = "text-green";}
 	echo "<tr>";
 	?>
@@ -105,62 +105,34 @@ for ($i = 0; $i < $TotalReg; $i++) {
 	echo "</td>";
 
 	echo "<td>";
-	$getexpmode = explode(",", $ponlogin);
-// get expired mode
-	$expmode = $getexpmode[1];
-	if ($expmode == "rem") {
-		echo "Remove";
-	} elseif ($expmode == "ntf") {
-		echo "Notice";
-	} elseif ($expmode == "remc") {
-		echo "Remove & Record";
-	} elseif ($expmode == "ntfc") {
-		echo "Notice & Record";
-	} else {
-
-	}
+	echo $profileOnlogin['expmode_label'];
 	echo "</td>";
 	echo "<td>";
-// get validity
-	$getvalid = explode(",", $ponlogin);
-	echo $getvalid[3];
+	echo $profileOnlogin['validity'];
 
 	echo "</td>";
 
 	echo "<td style='text-align:right;'>";
-// get price
-	$getprice = explode(",", $ponlogin);
-	$price = trim($getprice[2]);
+	$price = $profileOnlogin['price'];
 	if ($price == "" || $price == "0") {
 		echo "";
 	} else {
-		if ($currency == in_array($currency, $cekindo['indo'])) {
-			echo number_format((float)$price, 0, ",", ".");
-		} else {
-			echo number_format((float)$price, 2);
-		}
+		echo mikhmon_format_money_amount($price, $currency, $cekindo);
 	}
 
 	echo "</td>";
 	echo "<td style='text-align:right;'>";
-// get price
-	$getsprice = explode(",", $ponlogin);
-	$price = trim($getsprice[4]);
+	$price = $profileOnlogin['selling_price'];
 	if ($price == "" || $price == "0") {
 		echo "";
 	} else {
-		if ($currency == in_array($currency, $cekindo['indo'])) {
-			echo number_format((float)$price, 0, ",", ".");
-		} else {
-			echo number_format((float)$price, 2);
-		}
+		echo mikhmon_format_money_amount($price, $currency, $cekindo);
 	}
 
 	echo "</td>";
 	echo "<td>";
 
-	$getgracep = explode(",", $ponlogin);
-	echo $getgracep[6];
+	echo $profileOnlogin['lock'];
 	echo "</td>";
 	echo "</tr>";
 }

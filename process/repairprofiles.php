@@ -9,7 +9,7 @@ if (!isset($_SESSION["mikhmon"])) {
 
 include_once('../include/mikhmon_compat.php');
 
-$profiles = $API->comm("/ip/hotspot/user/profile/print");
+$profiles = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
 $count = count($profiles);
 $repaired = 0;
 

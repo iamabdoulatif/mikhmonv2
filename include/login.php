@@ -20,49 +20,53 @@ session_start();
 
 ?>
 
-<div style="padding-top: 5%;"  class="login-box">
-  <div class="card">
-    <div class="card-header">
-      <h3><?= $_please_login ?></h3>
-    </div>
-    <div class="card-body">
-      <div class="text-center pd-5">
-        <img src="img/logo-safelinkhub.svg" alt="SafelinkHub Logo" width="90" height="99">
+<style>
+  .slh-login-shell{min-height:calc(100vh - 20px);display:flex;align-items:center;justify-content:center;padding:10px;background:radial-gradient(circle at 20% 20%,rgba(32,168,216,.18),transparent 28%),radial-gradient(circle at 80% 10%,rgba(248,108,107,.12),transparent 26%)}
+  .slh-login-card{width:100%;max-width:360px;margin:0 auto;padding-top:0;overflow:hidden;border-radius:12px}
+  .slh-login-card .card-header{margin-bottom:0;padding:14px 10px;text-align:center;text-transform:uppercase;letter-spacing:.08em}
+  .slh-login-body{padding:26px 24px 22px}
+  .slh-brand-logo{width:64px;height:64px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+  .slh-brand-logo img{max-width:64px;max-height:64px}
+  .slh-brand-title{font-size:24px;font-weight:800;line-height:1.1}
+  .slh-brand-subtitle{font-size:11px;font-weight:700;letter-spacing:.16em;margin-top:5px}
+  .slh-phone{display:inline-block;margin-top:12px;font-weight:700}
+  .slh-role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:22px 0;border-radius:5px;overflow:hidden}
+  .slh-role-tabs span{padding:12px 4px;text-align:center;font-weight:700;background:rgba(115,129,143,.12)}
+  .slh-role-tabs .active{border-bottom:2px solid currentColor;border-radius:0}
+  .slh-input{height:44px;margin-bottom:12px;font-size:15px}
+  .slh-login-button{width:100%;height:46px;margin-top:8px;font-size:16px;font-weight:800}
+  .slh-powered{padding:18px 10px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;border-top:1px solid rgba(115,129,143,.25)}
+  @media (max-width:576px){.slh-login-shell{align-items:flex-start;padding-top:20px}.slh-login-card{max-width:340px}.slh-login-body{padding:22px 18px}}
+</style>
+
+<div class="slh-login-shell">
+  <div class="login-box slh-login-card">
+    <div class="card box-bordered">
+      <div class="card-header bg-primary">
+        <h3><?= $_please_login ?></h3>
       </div>
-      <div  class="text-center">
-      <span style="font-size: 25px; margin: 10px;">SafelinkHub</span>
+      <div class="card-body slh-login-body text-center">
+        <div class="slh-brand-logo">
+          <img src="img/logo-safelinkhub.svg" alt="Safelinkhub">
+        </div>
+        <div class="slh-brand-title">MIKHMON</div>
+        <div class="slh-brand-subtitle text-primary">BY SAFELINKHUB</div>
+        <a class="slh-phone text-secondary" href="tel:+2250709100552"><i class="fa fa-phone"></i> +225 07 09 10 05 52</a>
+
+        <div class="slh-role-tabs">
+          <span class="active text-primary"><i class="fa fa-shield"></i><br>Admin</span>
+          <span class="text-secondary"><i class="fa fa-briefcase"></i><br>Gérant</span>
+          <span class="text-secondary"><i class="fa fa-ticket"></i><br>Vendeur</span>
+        </div>
+
+        <form autocomplete="off" action="" method="post">
+          <input class="form-control slh-input" type="text" name="user" id="_username" placeholder="Identifiant" required="1" autofocus>
+          <input class="form-control slh-input" type="password" name="pass" placeholder="Mot de passe" required="1">
+          <input class="btn-login bg-primary pointer slh-login-button" type="submit" name="login" value="Login">
+          <div class="mr-t-10"><?= $error; ?></div>
+        </form>
       </div>
-      <div class="text-center" style="margin-bottom:6px;">
-        <a href="tel:+2250709100552" style="text-decoration:none; font-size:14px;">
-          <i class="fa fa-phone"></i> +225 07 09 10 05 52
-        </a>
-      </div>
-      <center>
-      <form autocomplete="off" action="" method="post">
-      <table class="table" style="width:90%">
-        <tr>
-          <td class="align-middle text-center">
-            <input style="width: 100%; height: 35px; font-size: 16px;" class="form-control" type="text" name="user" id="_username" placeholder="Username" required="1" autofocus>
-          </td>
-        </tr>
-        <tr>
-          <td class="align-middle text-center">
-            <input style="width: 100%; height: 35px; font-size: 16px;" class="form-control" type="password" name="pass" placeholder="Password" required="1">
-          </td>
-        </tr>
-        <tr>
-          <td class="align-middle text-center">
-            <input style="width: 100%; margin-top:20px; height: 35px; font-weight: bold; font-size: 17px;" class="btn-login bg-primary pointer" type="submit" name="login" value="Login">
-          </td>
-        </tr>
-        <tr>
-          <td class="align-middle text-center">
-            <?= $error; ?>
-          </td>
-        </tr>
-      </table>
-      </form>
-      </center>
+      <div class="slh-powered text-secondary">Powered by Safelinkhub</div>
     </div>
   </div>
 </div>

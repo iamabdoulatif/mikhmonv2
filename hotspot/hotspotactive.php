@@ -39,6 +39,7 @@ if (!isset($_SESSION["mikhmon"])) {
 	include_once('../lib/formatbytesbites.php');
 	$API = new RouterosAPI();
 	$API->debug = false;
+	$API->timeout = 15;
 	$API->connect($iphost, $userhost, decrypt($passwdhost));
 
 	if ($serveractive != "") {

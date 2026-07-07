@@ -22,6 +22,7 @@ if (!isset($_SESSION["mikhmon"])) {
   header("Location:../admin.php?id=login");
 } else {
 
+  include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
   if (substr($userprofile, 0, 1) == "*") {
     $userprofile = $userprofile;
@@ -41,56 +42,24 @@ if (!isset($_SESSION["mikhmon"])) {
     "?.id" => "$userprofile"
   ));
   $profiledetalis = $getprofile[0];
-  $pid = $profiledetalis['.id'];
-  $pname = $profiledetalis['name'];
-  $psharedu = $profiledetalis['shared-users'];
-  $pratelimit = $profiledetalis['rate-limit'];
-  $ponlogin = $profiledetalis['on-login'];
-  $ppool = $profiledetalis['address-pool'];
-  $sparent = $profiledetalis['parent-queue'];
+  $pid = isset($profiledetalis['.id']) ? $profiledetalis['.id'] : '';
+  $pname = isset($profiledetalis['name']) ? $profiledetalis['name'] : '';
+  $psharedu = isset($profiledetalis['shared-users']) ? $profiledetalis['shared-users'] : '1';
+  $pratelimit = isset($profiledetalis['rate-limit']) ? $profiledetalis['rate-limit'] : '';
+  $ponlogin = isset($profiledetalis['on-login']) ? $profiledetalis['on-login'] : '';
+  $ppool = isset($profiledetalis['address-pool']) ? $profiledetalis['address-pool'] : 'none';
+  $sparent = isset($profiledetalis['parent-queue']) ? $profiledetalis['parent-queue'] : 'none';
+  $profileOnlogin = mikhmon_parse_profile_onlogin($ponlogin);
 
   if(empty($ppool)){$ppool = "none";}
   if(empty($sparent)){$sparent = "none";}
 
-  $getexpmode = explode(",", $ponlogin)[1];
-
-  if ($getexpmode == "rem") {
-    $getexpmodet = "Remove";
-  } elseif ($getexpmode == "ntf") {
-    $getexpmodet = "Notice";
-  } elseif ($getexpmode == "remc") {
-    $getexpmodet = "Remove & Record";
-  } elseif ($getexpmode == "ntfc") {
-    $getexpmodet = "Notice & Record";
-  } else {
-    $getexpmode = "0";
-    $getexpmodet = "None";
-  }
-
-  $getprice = explode(",", $ponlogin)[2];
-  if ($getprice == "0") {
-    $getprice = "";
-  } else {
-    $getprice = $getprice;
-  }
-
-  $getsprice = explode(",", $ponlogin)[4];
-  if ($getsprice == "0") {
-    $getsprice = "";
-  } else {
-    $getsprice = $getsprice;
-  }
-
-  $getvalid = explode(",", $ponlogin)[3];
-
-  $getgracep = explode(",", $ponlogin)[4];
-
-  $getlocku = explode(",", $ponlogin)[6];
-  if ($getlocku == "") {
-    $getlocku = "Disable";
-  } else {
-    $getlocku = $getlocku;
-  }
+  $getexpmode = $profileOnlogin['expmode'];
+  $getexpmodet = $profileOnlogin['expmode_label'];
+  $getprice = $profileOnlogin['price'];
+  $getsprice = $profileOnlogin['selling_price'];
+  $getvalid = $profileOnlogin['validity'];
+  $getlocku = $profileOnlogin['lock'];
 
   $getallqueue = $API->comm("/queue/simple/print", array(
     "?dynamic" => "false",
@@ -99,10 +68,10 @@ if (!isset($_SESSION["mikhmon"])) {
   $getmonexpired = $API->comm("/system/scheduler/print", array(
     "?name" => "$pname",
   ));
-  $monexpired = $getmonexpired[0];
-  $monid = $monexpired['.id'];
-	$pmon = $monexpired['name'];
-	$chkpmon = $monexpired['disabled'];
+  $monexpired = isset($getmonexpired[0]) ? $getmonexpired[0] : array();
+  $monid = isset($monexpired['.id']) ? $monexpired['.id'] : '';
+	$pmon = isset($monexpired['name']) ? $monexpired['name'] : '';
+	$chkpmon = isset($monexpired['disabled']) ? $monexpired['disabled'] : 'true';
 	if(empty($pmon) || $chkpmon == "true"){$moncolor = "text-orange";}else{$moncolor = "text-green";}
 
   if (isset($_POST['name'])) {
@@ -137,7 +106,7 @@ if (!isset($_SESSION["mikhmon"])) {
 
     $parent = ($_POST['parent']);
 
-    include_once('../include/mikhmon_compat.php');
+    include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
     if ($expmode == "rem") {
       $mode = "remove";

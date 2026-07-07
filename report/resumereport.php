@@ -28,24 +28,30 @@ $session = $_GET['session'];
 // load config
   include('../include/config.php');
   include('../include/readcfg.php');
+  include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
 $idbl = $_GET['idbl'];
 $thisM = substr($idbl,0,3);
 $thisY = substr($idbl,-4);
 
 // Recalculate dataresume/totalresume from RouterOS to survive Docker reboots
+$resumeByDay = array();
 if ($idbl != "") {
-    $getData = $API->comm("/system/script/print", array("?owner" => "$idbl"));
+    $getData = mikhmon_get_sale_scripts($API, $session, array("?owner" => "$idbl"));
     $totalresume = 0;
-    $dataresume = '';
     foreach ($getData as $row) {
-        $getname = explode("-|-", $row['name']);
-        if (isset($getname[3]) && is_numeric($getname[3])) {
-            $dataresume .= $getname[0] . $getname[3];
-            $totalresume += floatval($getname[3]);
+        $record = mikhmon_sale_script_to_record($row);
+        $parts = explode('/', $record['source']);
+        $day = isset($parts[1]) ? intval($parts[1]) : 0;
+        if ($day > 0) {
+            if (!isset($resumeByDay[$day])) {
+                $resumeByDay[$day] = array('count' => 0, 'total' => 0);
+            }
+            $resumeByDay[$day]['count']++;
+            $resumeByDay[$day]['total'] += $record['price'];
+            $totalresume += $record['price'];
         }
     }
-    $_SESSION['dataresume'] = $dataresume;
     $_SESSION['totalresume'] = count($getData) . '/' . $totalresume;
 }
 
@@ -67,24 +73,20 @@ if ($mn == date("n")){
 }
 
 function resume_per_day($date){
-$evalue =  explode($date,$_SESSION['dataresume']);
-$x = count($evalue);
-			for ($i = 0; $i < $x; $i++) {
-				$result += (int) $evalue[$i];
-			}
-			return ($x-1).'/'.$result;
+global $resumeByDay;
+$parts = explode('/', $date);
+$day = isset($parts[1]) ? intval($parts[1]) : intval($date);
+if (!isset($resumeByDay[$day])) {
+  return '0/0';
+}
+return $resumeByDay[$day]['count'].'/'.$resumeByDay[$day]['total'];
 }
 
 $totalvrc =  explode("/",$_SESSION['totalresume'])[0];
 $totalincome = explode("/",$_SESSION['totalresume'])[1];
 
 
-if ($currency == in_array($currency, $cekindo['indo'])) {
-  $totalreport = "Total " . $totalvrc . "vcr : " . $currency . " " . number_format((float)$totalincome, 0, ",", ".");
-
-} else {
-  $totalreport = "Total " . $totalvrc . "vcr : " . $currency . " " . number_format((float)$totalincome, 2);
-}
+$totalreport = "Total " . $totalvrc . "vcr : " . $currency . " " . mikhmon_format_money_amount($totalincome, $currency, $cekindo);
 
 
 }
@@ -185,4 +187,4 @@ for ($i = 1; $i < $totD; $i++) {
 
 </script>
                 </div>
-              </div>  
+              </div>

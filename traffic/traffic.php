@@ -32,10 +32,11 @@ include('../include/readcfg.php');
 // routeros api
 include_once('../lib/routeros_api.class.php');
 include_once('../lib/formatbytesbites.php');
-$API = new RouterosAPI();
-$API->debug = false;
-  
-  if($API->connect( $iphost, $userhost, decrypt($passwdhost))){
+	$API = new RouterosAPI();
+	$API->debug = false;
+	$API->timeout = 15;
+
+	  if($API->connect( $iphost, $userhost, decrypt($passwdhost))){
 
 //$getinterface = $API->comm("/interface/print");
     //$interface = $getinterface[$iface-1]['name'];

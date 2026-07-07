@@ -69,6 +69,7 @@ if (!isset($_SESSION["mikhmon"])) {
   include_once('./lib/formatbytesbites.php');
   $API = new RouterosAPI();
   $API->debug = false;
+  $API->timeout = 15;
   $API->connect($iphost, $userhost, decrypt($passwdhost));
 
   $getidentity = $API->comm("/system/identity/print");
@@ -132,6 +133,11 @@ if (!isset($_SESSION["mikhmon"])) {
         return false;
 };
 </script>';
+
+  function mikhmon_missing_page($path) {
+    $safePath = htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
+    echo "<div class='row'><div class='col-12'><div class='card box-bordered'><div class='card-header'><h3><i class='fa fa-exclamation-triangle'></i> Page unavailable</h3></div><div class='card-body'>Missing project file: <code>" . $safePath . "</code></div></div></div></div>";
+  }
 
 
 // logout
@@ -354,7 +360,7 @@ elseif ($removeexpiredhotspotuser != "") {
 
 // hotspot bindings
   elseif ($hotspot == "binding") {
-    include_once('./hotspot/binding.php');
+    mikhmon_missing_page('./hotspot/binding.php');
   }
 
 // template editor
@@ -411,7 +417,7 @@ elseif ($removeexpiredhotspotuser != "") {
   elseif ($macbinding != "") {
     echo "<b class='cl-w'><i class='fa fa-circle-o-notch fa-spin' style='font-size:24px'></i> Processing...</b>";
 
-    include_once('./process/makebinding.php');
+    mikhmon_missing_page('./process/makebinding.php');
   }
 
 // selling
@@ -426,7 +432,7 @@ elseif ($report == "resume-report") {
 
 // selling
 elseif ($report == "export") {
-  include_once('./report/export.php');
+  mikhmon_missing_page('./report/export.php');
 }
 
 // selling
@@ -510,7 +516,7 @@ elseif ($ppp == "edit-profile") {
 </div>
 <script src="./js/highcharts/highcharts.js"></script>
 <script src="./js/highcharts/themes/hc.<?= $theme; ?>.js"></script>
-<script src="./js/mikhmon-ui.<?= $theme; ?>.min.js"></script>
+<script src="./js/mikhmon-ui.<?= $theme; ?>.min.js?t=<?= filemtime('./js/mikhmon-ui.' . $theme . '.min.js'); ?>"></script>
 <script src="./js/mikhmon.js?t=<?= str_replace(" ","_",date("Y-m-d H:i:s")); ?>"></script>
 
 <?php

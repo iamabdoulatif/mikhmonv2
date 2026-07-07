@@ -21,6 +21,7 @@ error_reporting(0);
 if (!isset($_SESSION["mikhmon"])) {
 	header("Location:../admin.php?id=login");
 } else {
+	include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
 	$idhr = $_GET['idhr'];
 	$idbl = $_GET['idbl'];
@@ -55,6 +56,7 @@ if (!isset($_SESSION["mikhmon"])) {
 
 				}
 			}
+			mikhmon_remove_sale_log($session, '', $idhr);
 		} elseif (strlen($idbl) > "0") {
 			if ($API->connect($iphost, $userhost, decrypt($passwdhost))) {
 				$API->write('/system/script/print', false);
@@ -68,6 +70,7 @@ if (!isset($_SESSION["mikhmon"])) {
 
 				}
 			}
+			mikhmon_remove_sale_log($session, $idbl);
 
 		}
 		echo "<script>window.location='./?report=selling&session=" . $session . "'</script>";
@@ -79,42 +82,34 @@ if (!isset($_SESSION["mikhmon"])) {
 		$fprefix = "";
 	}
 	if (strlen($idhr) > "0") {
-		if ($API->connect($iphost, $userhost, decrypt($passwdhost))) {
-			$getData = $API->comm("/system/script/print", array(
-				"?source" => "$idhr",
-			));
-			$TotalReg = count($getData);
-		}
+		$getData = mikhmon_get_sale_scripts($API, $session, array(
+			"?source" => "$idhr",
+		));
+		$TotalReg = count($getData);
 		$filedownload = $idhr;
 		$shf = "hidden";
 		$shd = "inline-block";
 	} elseif (strlen($idbl) > "0") {
-		if ($API->connect($iphost, $userhost, decrypt($passwdhost))) {
-			$getData = $API->comm("/system/script/print", array(
-				"?owner" => "$idbl",
-			));
-			$TotalReg = count($getData);
-		}
+		$getData = mikhmon_get_sale_scripts($API, $session, array(
+			"?owner" => "$idbl",
+		));
+		$TotalReg = count($getData);
 		$filedownload = $idbl;
 		$shf = "hidden";
 		$shd = "inline-block";
 	} elseif ($idhr == "" || $idbl == "") {
-		if ($API->connect($iphost, $userhost, decrypt($passwdhost))) {
-			$getData = $API->comm("/system/script/print", array(
-				"?comment" => "mikhmon",
-			));
-			$TotalReg = count($getData);
-		}
+		$getData = mikhmon_get_sale_scripts($API, $session, array(
+			"?comment" => "mikhmon",
+		));
+		$TotalReg = count($getData);
 		$filedownload = "all";
 		$shf = "text";
 		$shd = "none";
 	} elseif (strlen($idbl) > "0" ) {
-		if ($API->connect($iphost, $userhost, decrypt($passwdhost))) {
-			$getData = $API->comm("/system/script/print", array(
-				"?owner" => "$idbl",
-			));
-			$TotalReg = count($getData);
-		}
+		$getData = mikhmon_get_sale_scripts($API, $session, array(
+			"?owner" => "$idbl",
+		));
+		$TotalReg = count($getData);
 		$filedownload = $idbl;
 		$shf = "hidden";
 		$shd = "inline-block";
@@ -196,7 +191,7 @@ function number_format(number, decimals, dec_point, thousands_sep) {
           sum+=parseFloat(cells[i].firstChild.data);
           
           var th = document.getElementById('total');
-    <?php if ($currency == in_array($currency, $cekindo['indo'])) {
+    <?php if (in_array($currency, $cekindo['indo'])) {
       echo 'th.innerHTML = "'.$currency.' " + number_format(th.innerHTML + (sum),"","",".") ;';
 		} else {
 			echo 'th.innerHTML = "'.$currency.' " + number_format(th.innerHTML + (sum),2,".",",") ;';
@@ -421,12 +416,6 @@ $(document).ready(function(){
 					$_SESSION['dataresume'] = $dataresume;
 					$_SESSION['totalresume'] = $TotalReg.'/'.$totalresume;
 					
-					// Persistance locale pour résistance Docker / redémarrages
-						// Persistance locale pour resistance Docker / redemarrages
-						include_once('../include/mikhmon_compat.php');
-						foreach ($getData as $row) {
-							mikhmon_save_sale_log($session, $row);
-						}
 					}
 
 				?>

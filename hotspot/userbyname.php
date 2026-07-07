@@ -24,8 +24,9 @@ if (!isset($_SESSION["mikhmon"])) {
 } else {
 
   date_default_timezone_set($_SESSION['timezone']);
+  include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
-  $getprofile = $API->comm("/ip/hotspot/user/profile/print");
+  $getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
   $srvlist = $API->comm("/ip/hotspot/print");
 
   if (substr($hotspotuser, 0, 1) == "*") {

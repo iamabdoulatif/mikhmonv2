@@ -323,6 +323,15 @@ include('./include/info.php');
   <a href="./?hotspot=quick-print&session=<?= $session; ?>" class="menu <?= $squick; ?>"> <i class="fa fa-print"></i> <?= $_quick_print ?> </a>
   <!--vouchers-->
   <a href="./?hotspot=users-by-profile&session=<?= $session; ?>" class="menu <?= $susersbp; ?>"> <i class="fa fa-ticket"></i> <?= $_vouchers ?> </a>
+  <!--ppp-->
+  <div class="dropdown-btn <?= $mppp; ?>"><i class="fa fa-plug"></i> PPPoE
+    <i class="fa fa-caret-down"></i>
+  </div>
+  <div class="dropdown-container <?= $pppmenu; ?>">
+    <a href="./?ppp=profiles&session=<?= $session; ?>" class="<?= $spprofile; ?>"> <i class="fa fa-id-card"></i> <?= $_ppp_profiles ?> </a>
+    <a href="./?ppp=secrets&session=<?= $session; ?>" class="<?= $ssecrets; ?>"> <i class="fa fa-key"></i> <?= $_ppp_secrets ?> </a>
+    <a href="./?ppp=active&session=<?= $session; ?>" class="<?= $spactive; ?>"> <i class="fa fa-plug"></i> <?= $_ppp_active ?> </a>
+  </div>
    <!--log-->
   <div class="dropdown-btn <?= $log; ?>"><i class=" fa fa-align-justify"></i> <?= $_log ?>
     <i class="fa fa-caret-down"></i>
@@ -386,4 +395,3 @@ echo '<div class="main-container">';
   echo '<div class="main-container" style="display:none">';
 }
 ?>
-

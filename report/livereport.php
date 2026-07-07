@@ -38,8 +38,10 @@ include('../lang/'.$langid.'.php');
 // routeros api
   include_once('../lib/routeros_api.class.php');
   include_once('../lib/formatbytesbites.php');
+  include_once('../include/mikhmon_compat.php');
   $API = new RouterosAPI();
   $API->debug = false;
+  $API->timeout = 15;
   $API->connect($iphost, $userhost, decrypt($passwdhost));
 
   if ($livereport == "disable") {
@@ -48,58 +50,22 @@ include('../lang/'.$langid.'.php');
   } else {
     $logh = "350px";
     $lreport = "style='display:block;'";
-// get selling report
-    $thisD = date("d");
-    $thisM = strtolower(date("M"));
-    $thisY = date("Y");
-
-    if (strlen($thisD) == 1) {
-      $thisD = "0" . $thisD;
-    } else {
-      $thisD = $thisD;
-    }
-
-    $idhr = $thisM . "/" . $thisD . "/" . $thisY;
-    $idbl = $thisM . $thisY;
-
+    $getclock = $API->comm("/system/clock/print");
+    $clock = isset($getclock[0]) ? $getclock[0] : array("date" => date("M/d/Y"));
+    $idhr = mikhmon_date_to_legacy($clock['date']);
+    $idbl = mikhmon_sale_owner_from_source($idhr);
     $_SESSION[$session.'idhr'] = $idhr;
-
-   /* $getSRHr = $API->comm("/system/script/print", array(
-      "?source" => "$idhr",
-    ));
-    $TotalRHr = count($getSRHr);
-    $_SESSION[$session.'totalHr'] = $TotalRHr;*/
-    $getSRBl = $API->comm("/system/script/print", array(
+    mikhmon_get_sale_scripts($API, $session, array(
       "?owner" => "$idbl",
     ));
-    $TotalRBl = count($getSRBl);
+    $todaySummary = mikhmon_sales_summary($session, $idbl, $idhr);
+    $monthSummary = mikhmon_sales_summary($session, $idbl);
+    $TotalRHr = $todaySummary['count'];
+    $TotalRBl = $monthSummary['count'];
     $_SESSION[$session.'totalBl'] = $TotalRBl;
-    $tHr = 0;
-    $tBl = 0;
-    $TotalRHr = 0;
-/*
-    for ($i = 0; $i < $TotalRHr; $i++) {
-
-      $tHr += explode("-|-", $getSRHr[$i]['name'])[3];
-
-    }*/
-    foreach($getSRBl as $row){
-    
-      if((explode("-|-", $row['name'])[0]) == $idhr){
-         $tHr += explode("-|-", $row['name'])[3];
-         $TotalRHr += count((array)$row['source']); /*Modif line add (array) by github https://github.com/MasKawer*/
- 
-       }
-       $tBl += explode("-|-", $row['name'])[3];
-
-      if($TotalRHr == ""){
-        $TotalRHr = "0";
-        $_SESSION[$session.'totalHr'] = "0";
-      }else{
-        $_SESSION[$session.'totalHr'] = $TotalRHr;
-      }
-      
-    }
+    $_SESSION[$session.'totalHr'] = $TotalRHr;
+    $tHr = $todaySummary['total'];
+    $tBl = $monthSummary['total'];
   }
 }
 ?>
@@ -112,17 +78,10 @@ include('../lang/'.$langid.'.php');
                       <span >
                         <div id="reloadLreport">
                         <?php 
-                          if ($currency == in_array($currency, $cekindo['indo'])) {
-                            $dincome = number_format((float)$tHr, 0, ",", ".");
-                            $mincome = number_format((float)$tBl, 0, ",", ".");
-                            $_SESSION[$session.'dincome'] = $dincome;
-                            $_SESSION[$session.'mincome'] = $mincome;
-                          }else{
-                            $dincome = number_format((float)$tHr, 2);
-                            $mincome = number_format((float)$tBl, 2);
-                            $_SESSION[$session.'dincome'] = $dincome;
-                            $_SESSION[$session.'mincome'] = $mincome;
-                          }
+                          $dincome = mikhmon_format_money_amount($tHr, $currency, $cekindo);
+                          $mincome = mikhmon_format_money_amount($tBl, $currency, $cekindo);
+                          $_SESSION[$session.'dincome'] = $dincome;
+                          $_SESSION[$session.'mincome'] = $mincome;
                             echo $_income."<br/>" . "
                           ".$_today." " . $TotalRHr . "vcr : " . $currency . " " . $dincome . "<br/>
                           ".$_this_month." " . $TotalRBl . "vcr : " . $currency . " " . $mincome;
@@ -133,4 +92,3 @@ include('../lang/'.$langid.'.php');
               </div>
             </div>
             </div>
-            

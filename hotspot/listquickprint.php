@@ -24,6 +24,7 @@ ini_set('max_execution_time', 300);
 if (!isset($_SESSION["mikhmon"])) {
 	header("Location:../admin.php?id=login");
 } else {
+	include_once(__DIR__ . '/../include/mikhmon_compat.php');
 	$qpid = $_GET['qpid'];
 	$rem = $_GET['remove'];
 	$charup = array(
@@ -88,8 +89,8 @@ $getquickprint = $API->comm("/system/script/print", array("?.id" => "$qpid"));
 	// array color
     $color = array('1' => 'bg-blue', 'bg-indigo', 'bg-purple', 'bg-pink', 'bg-red', 'bg-yellow', 'bg-green', 'bg-teal', 'bg-cyan', 'bg-grey', 'bg-light-blue');
 
-    $srvlist = $API->comm("/ip/hotspot/print");
-    $getprofile = $API->comm("/ip/hotspot/user/profile/print");
+	    $srvlist = $API->comm("/ip/hotspot/print");
+	    $getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
 	
 
 	if (isset($_POST['name'])) {
@@ -120,12 +121,13 @@ $getquickprint = $API->comm("/system/script/print", array("?.id" => "$qpid"));
 		} else {
 			$adcomment = $adcomment;
 		}
-		$getprofile = $API->comm("/ip/hotspot/user/profile/print", array("?name" => "$profile"));
-		$ponlogin = $getprofile[0]['on-login'];
-		$getvalid = explode(",", $ponlogin)[3];
-		$getprice = explode(",", $ponlogin)[2];
-		$getsprice = explode(",", $ponlogin)[4];
-		$getlock = explode(",", $ponlogin)[6];
+			$getprofile = $API->comm("/ip/hotspot/user/profile/print", array("?name" => "$profile"));
+			$ponlogin = isset($getprofile[0]['on-login']) ? $getprofile[0]['on-login'] : '';
+			$profileOnlogin = mikhmon_parse_profile_onlogin($ponlogin);
+			$getvalid = $profileOnlogin['validity'];
+			$getprice = $profileOnlogin['price'];
+			$getsprice = $profileOnlogin['selling_price'];
+			$getlock = $profileOnlogin['lock'];
 
         $source = '#'.$name.'#'.$server.'#'.$user.'#'.$userl.'#'.$prefix.'#'.$char.'#'.$profile.'#'.$timelimit.'#'.$datalimit.'#'.$adcomment.'#'.$getvalid.'#'.$getprice.'_'.$getsprice.'#'.$getlock;
 

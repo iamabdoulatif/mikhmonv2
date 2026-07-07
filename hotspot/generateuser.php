@@ -26,34 +26,22 @@ if (!isset($_SESSION["mikhmon"])) {
 } else {
 // time zone
 date_default_timezone_set($_SESSION['timezone']);
+	include_once(__DIR__ . '/../include/mikhmon_compat.php');
 
 	$genprof = $_GET['genprof'];
 	if ($genprof != "") {
 		$getprofile = $API->comm("/ip/hotspot/user/profile/print", array(
 			"?name" => "$genprof",
 		));
-		$ponlogin = $getprofile[0]['on-login'];
-		$getprice = explode(",", $ponlogin)[2];
-		if ($getprice == "0") {
-			$getprice = "";
-		} else {
-			$getprice = $getprice;
-		}
+			$ponlogin = isset($getprofile[0]['on-login']) ? $getprofile[0]['on-login'] : '';
+			$profileOnlogin = mikhmon_parse_profile_onlogin($ponlogin);
+			$getprice = $profileOnlogin['price'];
+			$getvalid = $profileOnlogin['validity'];
+			$getlocku = $profileOnlogin['lock'];
 
-		$getvalid = explode(",", $ponlogin)[3];
-
-		$getlocku = explode(",", $ponlogin)[6];
-		if ($getlocku == "") {
-			$getprice = "Disable";
-		} else {
-			$getlocku = $getlocku;
-		}
-
-		if ($currency == in_array($currency, $cekindo['indo'])) {
-			$getprice = $currency . " " . number_format((float)$getprice, 0, ",", ".");
-		} else {
-			$getprice = $currency . " " . number_format((float)$getprice);
-		}
+			if ($getprice !== "") {
+				$getprice = $currency . " " . mikhmon_format_money_amount($getprice, $currency, $cekindo);
+			}
 		$ValidPrice = "<b>Validity : " . $getvalid . " | Price : " . $getprice . " | Lock User : " . $getlocku . "</b>";
 	} else {
 	}
@@ -230,7 +218,7 @@ date_default_timezone_set($_SESSION['timezone']);
 		}
 	}
 
-	$getprofile = $API->comm("/ip/hotspot/user/profile/print");
+	$getprofile = mikhmon_get_hotspot_user_profiles($API, $iphost, $userhost, $passwdhost);
 	include_once('./voucher/temp.php');
 	$genuser = explode("-", decrypt($genu));
 	$genuser1 = explode("~", decrypt($genu));

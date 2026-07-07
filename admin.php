@@ -115,10 +115,11 @@ if ($id == "login" || substr($url, -1) == "p") {
     </script>';
 } elseif ($id == "connect"  && !empty($session)) {
   ini_set("max_execution_time",5);  
-  include_once('./include/menu.php');
-  $API = new RouterosAPI();
-  $API->debug = false;
-  if ($API->connect($iphost, $userhost, decrypt($passwdhost))){
+	  include_once('./include/menu.php');
+	  $API = new RouterosAPI();
+	  $API->debug = false;
+	  $API->timeout = 15;
+	  if ($API->connect($iphost, $userhost, decrypt($passwdhost))){
     $_SESSION["connect"] = "<b class='text-green'>Connected</b>";
     echo "<script>window.location='./?session=" . $session . "'</script>";
   } else {
@@ -182,9 +183,8 @@ if ($id == "login" || substr($url, -1) == "p") {
 	echo "<script>window.location='./admin.php?id=sessions'</script>";
 }
 ?>
-<script src="js/mikhmon-ui.<?= $theme; ?>.min.js"></script>
+<script src="js/mikhmon-ui.<?= $theme; ?>.min.js?t=<?= filemtime('./js/mikhmon-ui.' . $theme . '.min.js'); ?>"></script>
 <script src="js/mikhmon.js?t=<?= str_replace(" ","_",date("Y-m-d H:i:s")); ?>"></script>
 <?php include('./include/info.php'); ?>
 </body>
 </html>
-

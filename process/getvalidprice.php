@@ -36,19 +36,22 @@ include('../include/lang.php');
 include('../lang/'.$langid.'.php');
 
   include_once('../lib/routeros_api.class.php');
+  include_once('../include/mikhmon_compat.php');
 
   $API = new RouterosAPI();
   $API->debug = false;
+  $API->timeout = 15;
   $API->connect($iphost, $userhost, decrypt($passwdhost));
 
   $uprofname = $_GET['name'];
   if ($uprofname != "") {
     $getprofile = $API->comm("/ip/hotspot/user/profile/print", array("?name" => "$uprofname"));
-    $ponlogin = $getprofile[0]['on-login'];
-    $getvalid = $_validity. " : " . explode(",", $ponlogin)[3];
-    $getprice = explode(",", $ponlogin)[2];
-    $getsprice = explode(",", $ponlogin)[4];
-    $getlock = "| ".$_lock_user." : " . explode(",", $ponlogin)[6];
+    $ponlogin = isset($getprofile[0]['on-login']) ? $getprofile[0]['on-login'] : '';
+    $profileOnlogin = mikhmon_parse_profile_onlogin($ponlogin);
+    $getvalid = $_validity. " : " . $profileOnlogin['validity'];
+    $getprice = $profileOnlogin['price'];
+    $getsprice = $profileOnlogin['selling_price'];
+    $getlock = "| ".$_lock_user." : " . $profileOnlogin['lock'];
     if ($getprice == 0) {
     } else {
       if ($curency == "Rp" || $curency == "rp" || $curency == "IDR" || $curency == "idr") {
@@ -66,7 +69,7 @@ include('../lang/'.$langid.'.php');
       }
     }
     echo '<b id="getdata">' . $getvalid . ' ' . $price . ' ' . $sprice . ' ' . $getlock . '</b>';
-    echo '<span id="validity">' . explode(",", $ponlogin)[3] . '</span> ';
+    echo '<span id="validity">' . $profileOnlogin['validity'] . '</span> ';
   }
 }
 ?>
