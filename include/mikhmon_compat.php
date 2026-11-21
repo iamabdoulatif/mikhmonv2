@@ -519,3 +519,70 @@ function mikhmon_routeros_onlogin_script($validity, $price, $sprice, $profileNam
 function mikhmon_routeros_bgservice_script($profileName, $mode) {
     return ':local dateint do={:local d $1; :if ([:len $d] >= 10) do={ :if ([:pick $d 4] = "-") do={ :return [:tonum ([:pick $d 0 4] . [:pick $d 5 7] . [:pick $d 8 10])]; } else={ :if ([:pick $d 3] = "/") do={ :local montharray ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"); :local month [:pick $d 0 3]; :local days [:pick $d 4 6]; :local year [:pick $d 7 11]; :local monthint ([ :find $montharray $month]); :local m ($monthint + 1); :if ([:len $m] = 1) do={ :set m ("0" . $m); }; :return [:tonum ("$year$m$days")]; }; }; }; :return 0; }; :local timeint do={ :local t $1; :if ([:len $t] >= 5) do={ :return (([:pick $t 0 2] * 60) + [:pick $t 3 5]); }; :return 0; }; :local date [/system clock get date]; :local time [/system clock get time]; :local month ""; :local day ""; :local year ""; :local montharray ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"); :if ([:pick $date 4] = "-") do={ :set year [:pick $date 0 4]; :set month [:pick $date 5 7]; :set day [:pick $date 8 10]; :local mnum [:tonum $month]; :set month [:pick $montharray ($mnum - 1)]; } else={ :set month [:pick $date 0 3]; :set day [:pick $date 4 6]; :set year [:pick $date 7 11]; }; :local datestr ("$month/$day/$year"); :local today [$dateint d=$datestr]; :local curtime [$timeint t=$time]; :foreach i in [ /ip hotspot user find where profile="'.$profileName.'" ] do={ :local comment [ /ip hotspot user get $i comment]; :local name [ /ip hotspot user get $i name]; :local gettime ""; :local expd 0; :local expt 0; :if ([:len $comment] >= 19) do={ :if (([:pick $comment 4] = "-") and ([:pick $comment 7] = "-") and ([:pick $comment 10] = " ")) do={ :set expd [$dateint d=$comment]; :set gettime [:pick $comment 11 19]; :set expt [$timeint t=$gettime]; } else={ :if (([:pick $comment 3] = "/") and ([:pick $comment 6] = "/")) do={ :set expd [$dateint d=$comment]; :set gettime [:pick $comment 12 20]; :set expt [$timeint t=$gettime]; }; }; }; :if ($expd > 0) do={ :if (($expd < $today) or ($expd = $today and $expt < $curtime)) do={ [ /ip hotspot user '.$mode.' $i ]; [ /ip hotspot active remove [find where user=$name] ]; }; }; };';
 }
+
+/**
+ * Filtre des ventes par intervalle de dates (rapport de vente "Du ... au ...").
+ * $from / $to : dates YYYY-MM-DD issues d'un <input type="date">.
+ */
+if (!function_exists('mikhmon_sale_ymd')) {
+  // Date de vente (mmm/dd/yyyy ou YYYY-MM-DD) -> "YYYYMMDD", '' si illisible.
+  function mikhmon_sale_ymd($raw)
+  {
+    $raw = trim((string) $raw);
+    if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $raw, $m)) {
+      return $m[1] . $m[2] . $m[3];
+    }
+    if (preg_match('/^([a-z]{3})[\/-](\d{1,2})[\/-](\d{4})$/i', $raw, $m)) {
+      $i = array_search(strtolower($m[1]), array('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'));
+      if ($i === false) {
+        return '';
+      }
+      return $m[3] . sprintf('%02d%02d', $i + 1, $m[2]);
+    }
+    return '';
+  }
+
+  // Valide l'intervalle ; retourne array(from, to) triés ou false.
+  function mikhmon_sale_range($from, $to)
+  {
+    $ok = '/^\d{4}-\d{2}-\d{2}$/';
+    if (!preg_match($ok, (string) $from) || !preg_match($ok, (string) $to)) {
+      return false;
+    }
+    if (strtotime($from) === false || strtotime($to) === false) {
+      return false;
+    }
+    return ($from <= $to) ? array($from, $to) : array($to, $from);
+  }
+
+  // Clés mensuelles Mikhmon (nov2026, dec2026...) couvertes par l'intervalle.
+  function mikhmon_sale_range_owners($from, $to)
+  {
+    $owners = array();
+    $cur = strtotime(substr($from, 0, 7) . '-01');
+    $end = strtotime(substr($to, 0, 7) . '-01');
+    // ponytail: plafond 60 mois pour éviter une boucle d'appels API sans fin.
+    for ($n = 0; $cur <= $end && $n < 60; $n++) {
+      $owners[] = strtolower(date('M', $cur)) . date('Y', $cur);
+      $cur = strtotime('+1 month', $cur);
+    }
+    return $owners;
+  }
+
+  // Garde uniquement les ventes dont la date est dans [from, to].
+  function mikhmon_filter_sales_range($rows, $from, $to)
+  {
+    $f = str_replace('-', '', $from);
+    $t = str_replace('-', '', $to);
+    $out = array();
+    foreach ((array) $rows as $row) {
+      $name = isset($row['name']) ? $row['name'] : '';
+      $parts = explode('-|-', $name);
+      $d = mikhmon_sale_ymd(isset($parts[0]) && $parts[0] !== '' ? $parts[0] : (isset($row['source']) ? $row['source'] : ''));
+      if ($d !== '' && $d >= $f && $d <= $t) {
+        $out[] = $row;
+      }
+    }
+    return $out;
+  }
+}
